@@ -271,9 +271,44 @@ void main(string args[])
 	}
 	writeln("--------------------------------------------------------");
 	
+	
+	import cairo;
+	import cairo.pdf;	
+	int left = -200, right = 400, top = 0, bottom = 400;
+	int margin = 20;
+	auto cr = Context(new PDFSurface("cairo.pdf",right-left,bottom-top));
+	cr.lineWidth(1);
+	cr.setSourceRGB(0,0,0);
+	cr.rectangle(Rectangle!double(margin,margin, right-left-2*margin, bottom-top-2*margin));
+	cr.stroke();
+	auto ffun = fit.result_function_values(x_min-5*(x_max-x_min),x_max+5*(x_max-x_min));
+	cr.setSourceRGB(0,0.8,0);
+	foreach(i,f; ffun)
+		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20);
+		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20);
+	cr.stroke();
+	cr.setSourceRGB(0,0,1);
+	foreach(i,f; ffun)
+		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20-f[2]*20);
+		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20-f[2]*20);
+	foreach(i,f; ffun)
+		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20+f[2]*20);
+		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20+f[2]*20);
+	cr.stroke();
+	foreach(dp; data)
+	{	cr.setSourceRGB(1,0,0);
+		cr.moveTo(margin-left+dp.c*20,bottom-margin-dp.v*20-dp.s*20);
+		cr.lineTo(margin-left+dp.c*20,bottom-margin-dp.v*20+dp.s*20);
+	}
+	cr.stroke();
+	foreach(dp; data)
+	{	cr.arc(margin-left+dp.c*20,bottom-margin-dp.v*20,4,0,2*PI);
+		cr.fill();
+	}
+	
 	// write the function and its one-sigma error to a file
 	{	auto f = File("function.dat","w");
-		foreach(point; fit.result_function_values(x_min-5*(x_max-x_min),x_max+5*(x_max-x_min)))
+		foreach(point; ffun)
 			f.writeln(point[0]," ",point[1]," ",point[2]);
 	}
 }

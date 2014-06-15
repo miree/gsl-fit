@@ -3,10 +3,12 @@
 	"description": "A minimal D application.",
 	"copyright": "Copyright © 2014, michael",
 	"authors": ["michael"],
+	"libs": ["cairo"],
 	"dependencies": {
 		"linenoise": "~master",
 		"pegged": "~master",	
 		"gsl": "~master",
-		"gsl-d": "~master"
+		"gsl-d": "~master",
+		"cairod": "~master"
 	}
 }
