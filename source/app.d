@@ -272,6 +272,9 @@ void main(string args[])
 	writeln("--------------------------------------------------------");
 	
 	
+	import canvas;
+	auto c = Canvas(-20,-10,20,20, 100);
+	
 	import cairo;
 	import cairo.pdf;	
 	int left = -200, right = 400, top = 0, bottom = 400;
