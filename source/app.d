@@ -67,7 +67,7 @@ Arithmetic:
                / "asinh" / "acosh" / "atanh" 
                / "sin" / "cos" / "tan" 
                / "asin" / "acos" / "atan" 
-               / "erf" / "erfc" / "gamma" 
+               / "erfc" / "erf" / "gamma" 
                / "sqrt"
                / "exp" / "log"
     BinaryFunction < BinaryName :'(' CalcExpr :',' CalcExpr :')'
@@ -78,6 +78,7 @@ Arithmetic:
     Constant <- identifier
 }));
 
+// map symbol names to positions in the parameter array
 static ulong[string] vars;
 
 // Evalutate an expression given in the shape of a parse tree.
@@ -114,7 +115,7 @@ double evaluate(in ParseTree p, ref double params[], double x = 0)
 			{
 				mixin(functionCases(["sin","cos","tan","asin","acos","atan",
 									 "sinh","cosh","tanh","asinh","acosh","atanh",
-									 "erf","erfc","gamma","sqrt","exp","log"]));
+									 "erfc","erf","gamma","sqrt","exp","log"]));
 				default: return double.init;
 			}
 			case "Arithmetic.BinaryFunction": 
@@ -193,6 +194,90 @@ double evaluate(in ParseTree p, ref double params[], double x = 0)
 	
 	return parseToReal(p);
 }
+
+
+import plot;
+
+//import gsld.multifit_nlin;
+//import canvas;
+//enum Symbol { circle, box, diamond, triangle, downtriangle, star, star2, star3, star4 }
+//void drawPoint(Canvas c, Dp!double p, double size, Symbol symbol = Symbol.circle)
+//{
+//	void drawStar(Canvas c, int N, double size, double reduction = 1.5)
+//	{
+//		c.moveTo(p.c+size*sin(0),p.v+size*cos(0));
+//	    foreach(i;0..(N*2))
+//	    {
+//			double radius = size/(1+reduction*(i%2));
+//			c.lineTo(p.c+radius*sin(2.0*PI*i/N/2),p.v+radius*cos(2.0*PI*i/N/2));
+//		}
+//		c.closePath();
+//	}
+//	
+//	c.setSourceRGB(1,0,0);
+//	final switch (symbol)
+//	{
+//		case Symbol.circle:
+//			c.arc(p.c, p.v,size*0.71,0,2*PI);
+//		break;             
+//		case Symbol.box:
+//			c.rectangle(p.c-size*0.71,p.v-size*0.71,2*size*0.71,2*size*0.71);
+//		break;             
+//		case Symbol.diamond:
+//			c.moveTo(p.c-size,p.v     );
+//			c.lineTo(p.c     ,p.v+size);
+//			c.lineTo(p.c+size,p.v     );
+//			c.lineTo(p.c     ,p.v-size);
+//			c.closePath();
+//		break;
+//		case Symbol.triangle:
+//			c.moveTo(p.c-size,p.v-size+size/4.0);
+//			c.lineTo(p.c+size,p.v-size+size/4.0);
+//			c.lineTo(p.c     ,p.v+size+size/4.0);
+//			c.closePath();
+//		break;
+//		case Symbol.downtriangle:
+//			c.moveTo(p.c-size,p.v+size-size/4.0);
+//			c.lineTo(p.c+size,p.v+size-size/4.0);
+//			c.lineTo(p.c     ,p.v-size-size/4.0);
+//			c.closePath();
+//		break;
+//		case Symbol.star:
+//			drawStar(c,5,size);
+//		break;
+//		case Symbol.star2:
+//			drawStar(c,4,size);
+//		break;
+//		case Symbol.star3:
+//			drawStar(c,6,size);
+//		break;
+//		case Symbol.star4:
+//			drawStar(c,7,size);
+//		break;
+//	}
+//	c.fill();
+//}
+//void drawPointWithError(Canvas c, Dp!double p, double size, Symbol symbol = Symbol.circle)
+//{
+//	drawPoint(c,p,size,symbol);
+//	c.moveTo(p.c,p.v-p.s);
+//	c.lineTo(p.c,p.v+p.s);
+//	c.identityStroke(size/3);
+//}
+//void drawPointWithErrorMarginals(Canvas c, Dp!double p, double size, Symbol symbol = Symbol.circle)
+//{
+//	drawPointWithError(c,p,size,symbol);
+//	c.moveTo(p.c-size/2,p.v-p.s);
+//	c.lineTo(p.c+size/2,p.v-p.s);
+//	c.moveTo(p.c-size/2,p.v+p.s);
+//	c.lineTo(p.c+size/2,p.v+p.s);
+//	c.identityStroke(size/3);
+//}
+//
+//
+
+
+
 
 
 void main(string args[])
@@ -274,57 +359,30 @@ void main(string args[])
 	
 	
 	import canvas;
-	void drawPoint(Canvas c, Dp!double p)
-	{
-		c.c.arc(p.c, p.v,0.2,0,2*PI);
-		c.c.setSourceRGB(1,0,0);
-		c.c.fill();
-		//c.c.moveTo(p.c
-	}
-	auto c = Canvas(-20,-10,20,20, 100);
-	foreach(p; data)
-	{
-		drawPoint(c,p);
-	}
-	
-	import cairo;
-	import cairo.pdf;	
-	int left = -200, right = 400, top = 0, bottom = 400;
-	int margin = 20;
-	auto cr = Context(new PDFSurface("cairo.pdf",right-left,bottom-top));
-	cr.lineWidth(1);
-	cr.setSourceRGB(0,0,0);
-	cr.rectangle(Rectangle!double(margin,margin, right-left-2*margin, bottom-top-2*margin));
-	cr.stroke();
+
+	auto c = Canvas( cairo.Box(-20,-10,20,20), 100);
 	auto ffun = fit.result_function_values(x_min-5*(x_max-x_min),x_max+5*(x_max-x_min));
-	cr.setSourceRGB(0,0.8,0);
-	foreach(i,f; ffun)
-		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20);
-		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20);
-	cr.stroke();
-	cr.setSourceRGB(0,0,1);
-	foreach(i,f; ffun)
-		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20-f[2]*20);
-		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20-f[2]*20);
-	foreach(i,f; ffun)
-		if (i)	cr.lineTo(margin-left+f[0]*20,bottom-margin-f[1]*20+f[2]*20);
-		else 	cr.moveTo(margin-left+f[0]*20,bottom-margin-f[1]*20+f[2]*20);
-	cr.stroke();
-	foreach(dp; data)
-	{	cr.setSourceRGB(1,0,0);
-		cr.moveTo(margin-left+dp.c*20,bottom-margin-dp.v*20-dp.s*20);
-		cr.lineTo(margin-left+dp.c*20,bottom-margin-dp.v*20+dp.s*20);
+	import std.algorithm;
+	auto xs = new double[ffun.length];
+	auto ys = new double[ffun.length];
+	auto yplus  = new double[ffun.length];
+	auto yminus = new double[ffun.length];
+	foreach(i, point; ffun) 
+	{
+		xs[i] = point[0];
+		ys[i] = point[1];
+		yplus[i] = point[1]+point[2];
+		yminus[i] = point[1]-point[2];
 	}
-	cr.stroke();
-	foreach(dp; data)
-	{	cr.arc(margin-left+dp.c*20,bottom-margin-dp.v*20,4,0,2*PI);
-		cr.fill();
-	}
+	c.line!double(xs,ys);
+	c.setSourceRGB(0,0,0);
+	c.identityStroke(0.2);
+	c.line!double(xs,yplus);
+	c.line!double(xs,yminus);
+	c.setSourceRGB(0,0,1);
+	c.identityStroke(0.2);
+	foreach(p; data) drawPointWithErrorMarginals(c,p,0.3,Symbol.box);
 	
-	// write the function and its one-sigma error to a file
-	{	auto f = File("function.dat","w");
-		foreach(point; ffun)
-			f.writeln(point[0]," ",point[1]," ",point[2]);
-	}
+
 }
 
