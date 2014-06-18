@@ -17,7 +17,7 @@ struct Canvas
 		c.scale(w/(x2-x1),h/(y2-y1)); // scale the bounding box to fit in w and h
 		c.translate(-x1,-y1); // move the bounding box to the left 
 
-		test();
+		//test();
 	}
 	
 	//this(double x1, double y1, double x2,
@@ -29,6 +29,15 @@ struct Canvas
 		 double w)
 	{
 		this(x1,y1,x2,y2, w,w*(y2-y1)/(x2-x1));
+	}
+	
+	void identityStroke(double lineWidth = 1)
+	{
+		c.save();
+		c.identityMatrix();
+		c.lineWidth(lineWidth);
+		c.stroke();
+		c.restore();
 	}
 	
 	void test()
@@ -43,4 +52,6 @@ struct Canvas
 		c.lineTo(0,10);
 		c.stroke();
 	}
+	
 }
+

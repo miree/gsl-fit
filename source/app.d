@@ -194,6 +194,7 @@ double evaluate(in ParseTree p, ref double params[], double x = 0)
 	return parseToReal(p);
 }
 
+
 void main(string args[])
 {
 	if (args.length < 4)
@@ -273,7 +274,18 @@ void main(string args[])
 	
 	
 	import canvas;
+	void drawPoint(Canvas c, Dp!double p)
+	{
+		c.c.arc(p.c, p.v,0.2,0,2*PI);
+		c.c.setSourceRGB(1,0,0);
+		c.c.fill();
+		//c.c.moveTo(p.c
+	}
 	auto c = Canvas(-20,-10,20,20, 100);
+	foreach(p; data)
+	{
+		drawPoint(c,p);
+	}
 	
 	import cairo;
 	import cairo.pdf;	
