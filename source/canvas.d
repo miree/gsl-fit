@@ -3,15 +3,12 @@ import cairo.pdf;
 
 struct Canvas
 {
-private:
 	double w,h;
 	Box box;
-	
-public:
 	Context context;
 
 	/** w and h in inch
-	 * x1 < x2 and y1 < y2 give the user space bounding box
+	 * box give the user space bounding box
 	 */
 	this(Box box, double w, double h)
 	{
@@ -32,11 +29,11 @@ public:
 		this(box, w,w*(box.point2.y-box.point1.y)/(box.point2.x-box.point1.x));
 	}
 	
-	void identityStroke(double lineWidth = 1)
+	void identityStroke(double lineWidth)
 	{
 		context.save();
 		context.identityMatrix();
-		context.lineWidth(lineWidth);
+		context.lineWidth(1);
 		context.stroke();
 		context.restore();
 	}
@@ -73,5 +70,122 @@ public:
 		return mixin("context."~m~"(args)");
 	}
 
-}
 
+
+
+	enum Symbol 
+	{ 
+		circle, 
+		box, 
+		diamond, 
+		triangle, 
+		downtriangle, 
+		star, 
+		star2, 
+		star3, 
+		star4 
+	}
+	
+	struct DeviceTransformation
+	{
+		Point!double pDevice;
+		Context *c;
+		this(ref Context c, Point!double p)
+		{
+			this.c = &c;
+			pDevice = c.userToDevice(p);
+			c.save();
+			c.identityMatrix();
+			c.translate(pDevice.x, pDevice.y);
+		}
+		~this()
+		{
+			c.restore();
+		}
+	}
+	
+	void drawPoint(Point!double p, double size, Canvas.Symbol symbol)
+	{
+		void drawStar(int N, double size, double reduction = 1.5)
+		{
+			import std.math;
+			context.moveTo(size*sin(0),-size*cos(0));
+			foreach(i;1..(N*2))
+			{
+				double radius = size/(1+reduction*(i%2));
+				context.lineTo(radius*sin(2.0*PI*i/N/2),-radius*cos(2.0*PI*i/N/2));
+			}
+			context.closePath();
+		}
+	
+		auto dt = DeviceTransformation(context,p);
+		final switch (symbol)
+		{
+			case Canvas.Symbol.circle:
+				import std.math;
+				context.arc(0,0, size*0.71, 0,2*PI);
+			break;             
+			case Canvas.Symbol.box:
+				context.rectangle(-size*0.71,-size*0.71,
+								  2*size*0.71,2*size*0.71);
+			break;             
+			case Canvas.Symbol.diamond:
+				context.moveTo(-size, 0    );
+				context.lineTo(0    ,  size);
+				context.lineTo( size, 0    );
+				context.lineTo(0    , -size);
+				context.closePath();
+			break;
+			case Canvas.Symbol.triangle:
+				context.moveTo(-size,-size+size/4.0);
+				context.lineTo( size,-size+size/4.0);
+				context.lineTo(    0, size+size/4.0);
+				context.closePath();
+			break;
+			case Canvas.Symbol.downtriangle:
+				context.moveTo(-size,  size-size/4.0);
+				context.lineTo( size,  size-size/4.0);
+				context.lineTo(    0, -size-size/4.0);
+				context.closePath();
+			break;
+			case Canvas.Symbol.star:
+				drawStar(5,size);
+			break;
+			case Canvas.Symbol.star2:
+				drawStar(4,size);
+			break;
+			case Canvas.Symbol.star3:
+				drawStar(6,size);
+			break;
+			case Canvas.Symbol.star4:
+				drawStar(7,size);
+			break;
+		}
+		context.fill();
+	}
+	
+	void drawError(Point!double p, double deltaPlus, double deltaMinus, double size, Canvas.Symbol symbol = Canvas.Symbol.circle)
+	{
+		context.moveTo(p.x,p.y+deltaPlus);
+		context.lineTo(p.x,p.y-deltaMinus);
+		identityStroke(0.1*size);
+	}
+	void drawError(Point!double p, double delta, double size)
+	{
+		drawError(p,delta,delta,size);
+	}
+	void drawErrorMarginals(Point!double p, double deltaPlus, double deltaMinus, double size)
+	{
+		auto sizeu = context.deviceToUser( Point!double(size,size) );
+		context.moveTo(p.x-sizeu.x/2,p.y-deltaMinus);
+		context.lineTo(p.x+sizeu.x/2,p.y-deltaMinus);
+		context.moveTo(p.x-sizeu.x/2,p.y+deltaPlus);
+		context.lineTo(p.x+sizeu.x/2,p.y+deltaPlus);
+		identityStroke(0.1*size);
+	}
+	void drawErrorMarginals(Point!double p, double delta, double size)
+	{
+		drawErrorMarginals(p,delta,delta,size);
+	}
+	
+}

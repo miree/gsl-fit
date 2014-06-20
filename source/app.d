@@ -359,8 +359,18 @@ void main(string args[])
 	
 	
 	import canvas;
+	import plot;
 
-	auto c = Canvas( cairo.Box(-20,-10,20,20), 100);
+	auto bbox = boundingBox(data)
+				.addLeftRightMargins(1,1)
+				.addBottomTopMargins(0.1,0.1);
+	double size = 10;
+
+	auto c = Canvas( bbox, 1000);
+	c.setSourceRGB(0,0,0);
+	c.vertLine(0);
+	c.horiLine(0);
+	c.identityStroke(1*size);
 	auto ffun = fit.result_function_values(x_min-5*(x_max-x_min),x_max+5*(x_max-x_min));
 	import std.algorithm;
 	auto xs = new double[ffun.length];
@@ -375,13 +385,14 @@ void main(string args[])
 		yminus[i] = point[1]-point[2];
 	}
 	c.line!double(xs,ys);
-	c.setSourceRGB(0,0,0);
-	c.identityStroke(0.2);
+	c.setSourceRGB(0.5,0.2,0.2);
+	c.identityStroke(1*size);
 	c.line!double(xs,yplus);
 	c.line!double(xs,yminus);
 	c.setSourceRGB(0,0,1);
-	c.identityStroke(0.2);
-	foreach(p; data) drawPointWithErrorMarginals(c,p,0.3,Symbol.box);
+	c.identityStroke(1*size);
+	import cairo;
+	foreach(p; data) drawPointWithErrorMarginals(c, p,size,Canvas.Symbol.star);
 	
 
 }
