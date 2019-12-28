@@ -5,18 +5,18 @@ import std.math;
 void drawPointWithError(Canvas canvas, Dp!double p, double size, Canvas.Symbol symbol = Canvas.Symbol.circle)
 {
 	canvas.drawPoint(Point!double(p.c,p.v), size, symbol);
-	canvas.drawError(Point!double(p.c,p.v), p.s, size);
+	canvas.drawError(Point!double(p.c,p.v), p.s, size/10);
 }
 
 void drawPointWithErrorMarginals(Canvas canvas, Dp!double p, double size, Canvas.Symbol symbol = Canvas.Symbol.circle)
 {
 	canvas.drawPoint(Point!double(p.c,p.v), size, symbol);
-	canvas.drawError(Point!double(p.c,p.v), p.s, size);
-	canvas.drawErrorMarginals(Point!double(p.c,p.v), p.s, size);
+	canvas.drawError(Point!double(p.c,p.v), p.s, size/10);
+	canvas.drawErrorMarginals(Point!double(p.c,p.v), p.s, size/10);
 }
 
 import cairo;
-Box boundingBox(Dp!double points[])
+Box boundingBox(Dp!double[] points)
 {
 	assert(points.length >= 2);
 	

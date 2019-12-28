@@ -33,7 +33,7 @@ struct Canvas
 	{
 		context.save();
 		context.identityMatrix();
-		context.lineWidth(1);
+		context.lineWidth(lineWidth);
 		context.stroke();
 		context.restore();
 	}
@@ -47,14 +47,14 @@ struct Canvas
 		context.moveTo(x, box.point1.y);
 		context.lineTo(x, box.point2.y);
 	}
-	void line(T)(Point!T points[])
+	void line(T)(Point!T[] points)
 	{
 		if (points.length)
 			context.moveTo(points[0].x, points[0].y);
 		foreach(point; points[1..$])
 			context.lineTo(point.x, point.y);
 	}
-	void line(T)(T xs[], T ys[])
+	void line(T)(T[] xs, T[] ys)
 	{
 		import std.algorithm;
 		ulong len = min(xs.length, ys.length);
@@ -109,7 +109,7 @@ struct Canvas
 		void drawStar(int N, double size, double reduction = 1.5)
 		{
 			import std.math;
-			context.moveTo(size*sin(0),-size*cos(0));
+			context.moveTo(size*sin(0.0),-size*cos(0.0));
 			foreach(i;1..(N*2))
 			{
 				double radius = size/(1+reduction*(i%2));
@@ -168,7 +168,8 @@ struct Canvas
 	{
 		context.moveTo(p.x,p.y+deltaPlus);
 		context.lineTo(p.x,p.y-deltaMinus);
-		identityStroke(0.1*size);
+		//identityStroke(0.1*size);
+		identityStroke(3);
 	}
 	void drawError(Point!double p, double delta, double size)
 	{
@@ -177,11 +178,12 @@ struct Canvas
 	void drawErrorMarginals(Point!double p, double deltaPlus, double deltaMinus, double size)
 	{
 		auto sizeu = context.deviceToUser( Point!double(size,size) );
-		context.moveTo(p.x-sizeu.x/2,p.y-deltaMinus);
-		context.lineTo(p.x+sizeu.x/2,p.y-deltaMinus);
-		context.moveTo(p.x-sizeu.x/2,p.y+deltaPlus);
-		context.lineTo(p.x+sizeu.x/2,p.y+deltaPlus);
-		identityStroke(0.1*size);
+		context.moveTo(p.x-sizeu.x/20.,p.y-deltaMinus);
+		context.lineTo(p.x+sizeu.x/20.,p.y-deltaMinus);
+		context.moveTo(p.x-sizeu.x/20.,p.y+deltaPlus);
+		context.lineTo(p.x+sizeu.x/20.,p.y+deltaPlus);
+		//identityStroke(0.1*size);
+		identityStroke(3);
 	}
 	void drawErrorMarginals(Point!double p, double delta, double size)
 	{

@@ -8,7 +8,8 @@
 		"linenoise": "~master",
 		"pegged": "~master",	
 		"gsl": "~master",
-		"gsl-d": "~master",
+		"gsl-d": {"path": "../gsl-d"},
 		"cairod": "~master"
-	}
+	},
+	"versions": ["CairoPDFSurface"]
 }

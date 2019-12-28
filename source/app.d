@@ -83,7 +83,7 @@ static ulong[string] vars;
 
 // Evalutate an expression given in the shape of a parse tree.
 // The params[] can be used to parameterize the expression
-double evaluate(in ParseTree p, ref double params[], double x = 0)
+double evaluate(in ParseTree p, ref double[] params, double x = 0)
 {
 	static double[string] constants;
 	
@@ -102,7 +102,7 @@ double evaluate(in ParseTree p, ref double params[], double x = 0)
 	double parseToReal(in ParseTree p)
 	{
 		
-		string functionCases(string names[])
+		string functionCases(string[] names)
 		{
 			string result;
 			foreach(name; names) result ~= "case \"" ~ name ~ "\": return " ~ name ~ "(parseToReal(p.children[1]));";
@@ -280,7 +280,7 @@ import plot;
 
 
 
-void main(string args[])
+void main(string[] args)
 {
 	if (args.length < 4)
 	{
@@ -307,8 +307,10 @@ void main(string args[])
 	double x_min, x_max;
 	{	auto f = File(args[1],"r");
 		int i = 0;
-		foreach(line; f.byLine())
+		foreach(raw_line; f.byLine())
 		{
+			import std.string;
+			auto line = raw_line.stripLeft().stripRight();
 			auto values = map!(to!double)(split(line,' '));
 			if (values.length == 2)
 				data ~= Dp!double(values[0],values[1]);
@@ -329,7 +331,7 @@ void main(string args[])
 			}
 		}
 	}
-	double fun(double x, double params[])
+	double fun(double x, double[] params)
 	{
 		return evaluate(parseTree, params, x);
 	}
@@ -370,7 +372,7 @@ void main(string args[])
 	c.setSourceRGB(0,0,0);
 	c.vertLine(0);
 	c.horiLine(0);
-	c.identityStroke(1*size);
+	c.identityStroke(1);
 	auto ffun = fit.result_function_values(x_min-5*(x_max-x_min),x_max+5*(x_max-x_min));
 	import std.algorithm;
 	auto xs = new double[ffun.length];
@@ -386,11 +388,11 @@ void main(string args[])
 	}
 	c.line!double(xs,ys);
 	c.setSourceRGB(0.5,0.2,0.2);
-	c.identityStroke(1*size);
+	c.identityStroke(3);
 	c.line!double(xs,yplus);
 	c.line!double(xs,yminus);
 	c.setSourceRGB(0,0,1);
-	c.identityStroke(1*size);
+	c.identityStroke(3);
 	import cairo;
 	foreach(p; data) drawPointWithErrorMarginals(c, p,size,Canvas.Symbol.star);
 	
